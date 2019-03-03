@@ -51,15 +51,18 @@ public class StageCoachMain extends Application {
 		StageStyle stageStyle = getStageStyle();
 
 		// сохраняю ссылку на текущее окно
-		final Stage stageRef = stage;
+		var stageRef = stage;
 
 		// корневая нода для группировки всех объектов в окне
 		Group rootGroup;
 		TextField titleTextField;
+
 		Button toBackButton = new Button("toBack()");
 		toBackButton.setOnAction(e -> stageRef.toBack());
+
 		Button toFrontButton = new Button("toFront()");
 		toFrontButton.setOnAction(e -> stageRef.toFront());
+
 		Button closeButton = new Button("close()");
 		closeButton.setOnAction(e -> stageRef.close());
 
@@ -71,31 +74,34 @@ public class StageCoachMain extends Application {
 		blue.setArcWidth(30);
 
 		textStageX = new Text();
-		textStageX.setTextOrigin(VPos.TOP);
+//		textStageX.setTextOrigin(VPos.TOP);
 		textStageY = new Text();
-		textStageY.setTextOrigin(VPos.TOP);
+//		textStageY.setTextOrigin(VPos.TOP);
 		textStageH = new Text();
-		textStageH.setTextOrigin(VPos.TOP);
+//		textStageH.setTextOrigin(VPos.TOP);
 		textStageW = new Text();
-		textStageW.setTextOrigin(VPos.TOP);
+//		textStageW.setTextOrigin(VPos.TOP);
 		textStageF = new Text();
-		textStageF.setTextOrigin(VPos.TOP);
+//		textStageF.setTextOrigin(VPos.TOP);
 
 		checkBoxResizable = new CheckBox("resizable");
+		// чекбокс изменения размеров устанавливаю в дизейбл для сцен
 		checkBoxResizable.setDisable(stageStyle == StageStyle.TRANSPARENT || stageStyle == StageStyle.UNDECORATED);
 
 		checkBoxFullScreen = new CheckBox("fullScreen");
-		titleTextField = new TextField("Stage Coach");
+		titleTextField = new TextField("Stage Coach!");
 		Label titleLabel = new Label("title");
 
 		HBox titleBox = new HBox(titleLabel, titleTextField);
+		titleBox.setSpacing(4);
+
 		VBox contentBox = new VBox(
 				textStageX, textStageY, textStageW, textStageH, textStageF,
 				checkBoxResizable, checkBoxFullScreen,
 				titleBox, toBackButton, toFrontButton, closeButton);
 		contentBox.setLayoutX(30);
 		contentBox.setLayoutY(20);
-		contentBox.setSpacing(10);
+		contentBox.setSpacing(8);
 
 		// на корневую группу добавляю элементы как в стопку слева на право
 		rootGroup = new Group(blue, contentBox);
@@ -107,58 +113,65 @@ public class StageCoachMain extends Application {
 		// и добавляю сцену на окно
 		stage.setScene(scene);
 
-
-		//when mouse button is pressed, save the initial position of screen
+		// при нажачтии кнопки мыши фиксирую ее координаты относительно экрана и окна приложения
 		rootGroup.setOnMousePressed((MouseEvent me) -> {
 			dragAnchorX = me.getScreenX() - stageRef.getX();
 			dragAnchorY = me.getScreenY() - stageRef.getY();
 		});
 
-		//when screen is dragged, translate it accordingly
+		// теперь при перетягивании устанвливаю новые координаты сцене
 		rootGroup.setOnMouseDragged((MouseEvent me) -> {
 			stageRef.setX(me.getScreenX() - dragAnchorX);
 			stageRef.setY(me.getScreenY() - dragAnchorY);
 		});
 
-		textStageX.textProperty().bind(new SimpleStringProperty("x: ")
-				.concat(stageRef.xProperty().asString()));
-		textStageY.textProperty().bind(new SimpleStringProperty("y: ")
-				.concat(stageRef.yProperty().asString()));
-		textStageW.textProperty().bind(new SimpleStringProperty("width: ")
-				.concat(stageRef.widthProperty().asString()));
-		textStageH.textProperty().bind(new SimpleStringProperty("height: ")
-				.concat(stageRef.heightProperty().asString()));
-		textStageF.textProperty().bind(new SimpleStringProperty("focused: ")
-				.concat(stageRef.focusedProperty().asString()));
+		// биндю текстовые метки к нужным проперти с окна
+		textStageX.textProperty()
+				.bind(new SimpleStringProperty("x: ").concat(stageRef.xProperty().asString()));
 
-		// по умолчанию устанавливаю тип окна
+		textStageY.textProperty()
+				.bind(new SimpleStringProperty("y: ").concat(stageRef.yProperty().asString()));
+
+		textStageW.textProperty()
+				.bind(new SimpleStringProperty("width: ").concat(stageRef.widthProperty().asString()));
+
+		textStageH.textProperty()
+				.bind(new SimpleStringProperty("height: ").concat(stageRef.heightProperty().asString()));
+
+		textStageF.textProperty()
+				.bind(new SimpleStringProperty("focused: ").concat(stageRef.focusedProperty().asString()));
+
+		// по умолчанию устанавливаю окно неизменяемым
 		stage.setResizable(false);
 
-		// биндю двухсторонне свойство чекбокса к свойству окна
+		// биндю двухсторонне свойство чекбокса к проперти изменения ока
 		checkBoxResizable.selectedProperty().bindBidirectional(stage.resizableProperty());
 
 		// добавляю к проперти чекбокса инвалидейт лисенер
-		checkBoxFullScreen.selectedProperty().addListener(ov ->
+		checkBoxFullScreen.selectedProperty().addListener(o ->
 				// при обновлении значений вызываю метод установки полного экрана
 				// и значение текущее забираю из пропертис чекбокса
 				stageRef.setFullScreen(checkBoxFullScreen.selectedProperty().getValue()));
 
 		// объекту StringProperty биндю к полю ввода текста в приложении
-		title.bind(titleTextField.textProperty());
-
+//		title.bind(titleTextField.textProperty());
 		// биндю тайтл сцены к объекту StringProperty, который уже прибенден к полю ввода текста
-		stage.titleProperty().bind(title);
+//		stage.titleProperty().bind(title);
+
+		// реализация биндинга тайтла окна к полю ввода без использования дополнительного поля свойств
+		stage.titleProperty().bind(titleTextField.textProperty());
 
 		// назначаю стиль для окна, стиль в начале выбирается
 		// на основе переданного при запуске в программу параметра
 		stage.initStyle(stageStyle);
 
+		// метод реагирующий на закрытие программы стандартными срезствами винды, т.е. крестик
 		stage.setOnCloseRequest((WindowEvent we) -> System.out.println("Stage is closing"));
 
 		// вывожу окно на экран
 		stage.show();
 
-		// границы экрана в виде объекта прямоугольника
+		// границы экрана монитора в виде объекта прямоугольника
 		Rectangle2D primScreenBounds = Screen.getPrimary().getVisualBounds();
 
 		// задаю расположение окна, делитель 2 что бы в самом центре экрана его разместить
@@ -167,7 +180,8 @@ public class StageCoachMain extends Application {
 	}
 
 	/**
-	 * получение стиля сцены на основе переданного параметра
+	 * получение стиля сцены на основе переданного параметра при запуске программы в командной строке
+	 *
 	 * @return возвращает объект сцены
 	 */
 	private StageStyle getStageStyle() {
